@@ -9,6 +9,14 @@ enum class Operation {
     FACTORIAL
 };
 
+
+#include <getopt.h>
+
+int getopt_long(int argc, char * const argv[],
+           const char *optstring,
+           const struct option *longopts, int *longindex);
+
+
 int main(int argc, char *argv[]) {
 
     int a = stoi2(argv[1]);
