@@ -1,22 +1,16 @@
+#include "math_ops.hpp"
 #include <getopt.h>
 #include <stdio.h>
-#include "math_ops.hpp"
 
-enum TaskState {
-    TASK_OK = 0,
-    TASK_HELP = 1,
-    TASK_ERROR = -1
-};
+enum TaskState { TASK_OK = 0, TASK_HELP = 1, TASK_ERROR = -1 };
 
 struct Task {
     int first_number;
     int second_number;
     char operation;
-    double result;
+    int result;
     int state;
 };
-
-
 
 int run(int argc, char **argv);
 int parse(int argc, char **argv, Task &task);
@@ -27,9 +21,7 @@ void print_help();
 int stoi2(const char *str);
 bool is_binary_operation(char operation);
 
-int main(int argc, char **argv) {
-    return run(argc, argv);
-}
+int main(int argc, char **argv) { return run(argc, argv); }
 
 int run(int argc, char **argv) {
     Task task;
@@ -54,10 +46,7 @@ int run(int argc, char **argv) {
 }
 
 int parse(int argc, char **argv, Task &task) {
-    static struct option long_options[] = {
-        {"help", 0, 0, 'h'},
-        {0, 0, 0, 0}
-    };
+    static struct option long_options[] = {{"help", 0, 0, 'h'}, {0, 0, 0, 0}};
 
     int option_char = 0;
 
@@ -125,27 +114,27 @@ int calculate(Task &task) {
     }
 
     switch (task.operation) {
-        case '+':
-            task.state = mathlib::add(task.first_number, task.second_number, &math_result);
-            break;
-        case '-':
-            task.state = mathlib::sub(task.first_number, task.second_number, &math_result);
-            break;
-        case '*':
-            task.state = mathlib::mul(task.first_number, task.second_number, &math_result);
-            break;
-        case '/':
-            task.state = mathlib::divide(task.first_number, task.second_number, &math_result);
-            break;
-        case '^':
-            task.state = mathlib::power(task.first_number, task.second_number, &math_result);
-            break;
-        case '!':
-            task.state = mathlib::factorial(task.first_number, &math_result);
-            break;
-        default:
-            task.state = TASK_ERROR;
-            return task.state;
+    case '+':
+        task.state = mathlib::add(task.first_number, task.second_number, &math_result);
+        break;
+    case '-':
+        task.state = mathlib::sub(task.first_number, task.second_number, &math_result);
+        break;
+    case '*':
+        task.state = mathlib::mul(task.first_number, task.second_number, &math_result);
+        break;
+    case '/':
+        task.state = mathlib::divide(task.first_number, task.second_number, &math_result);
+        break;
+    case '^':
+        task.state = mathlib::power(task.first_number, task.second_number, &math_result);
+        break;
+    case '!':
+        task.state = mathlib::factorial(task.first_number, &math_result);
+        break;
+    default:
+        task.state = TASK_ERROR;
+        return task.state;
     }
 
     if (task.state == TASK_OK) {
@@ -165,7 +154,7 @@ int print(Task &task) {
         return 1;
     }
 
-    printf("%f\n", task.result);
+    printf("%d\n", task.result);
     return 0;
 }
 
@@ -220,13 +209,13 @@ int stoi2(const char *str) {
 
 bool is_binary_operation(char operation) {
     switch (operation) {
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-        case '^':
-            return true;
-        default:
-            return false;
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '^':
+        return true;
+    default:
+        return false;
     }
 }
