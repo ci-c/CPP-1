@@ -25,6 +25,7 @@ int calculate(Task &task);
 int print(Task &task);
 void print_help();
 int stoi2(const char *str);
+bool is_binary_operation(char operation);
 
 int main(int argc, char **argv) {
     return run(argc, argv);
@@ -83,12 +84,36 @@ int parse(int argc, char **argv, Task &task) {
 }
 
 int check(Task &task) {
-    if (task.operation == '/' && task.second_number == 0) {
-        task.state = TASK_ERROR;
+    if (task.state != TASK_OK) {
         return task.state;
     }
 
-    task.state = TASK_OK;
+    if (is_binary_operation(task.operation)) {
+        if (task.operation == '/' && task.second_number == 0) {
+            task.state = TASK_ERROR;
+            return task.state;
+        }
+
+        if (task.operation == '^' && task.second_number < 0) {
+            task.state = TASK_ERROR;
+            return task.state;
+        }
+
+        task.state = TASK_OK;
+        return task.state;
+    }
+
+    if (task.operation == '!') {
+        if (task.first_number < 0) {
+            task.state = TASK_ERROR;
+            return task.state;
+        }
+
+        task.state = TASK_OK;
+        return task.state;
+    }
+
+    task.state = TASK_ERROR;
     return task.state;
 }
 
@@ -145,8 +170,28 @@ int print(Task &task) {
 }
 
 void print_help() {
-    printf("Usage: calculator <a> <op> <b>\n");
-    printf("Example: calculator 10 + 20\n");
+    printf("Usage:\n");
+    printf("  iusearchbtw [--help]\n");
+    printf("  iusearchbtw <a> <op> <b>\n");
+    printf("\n");
+    printf("Operations:\n");
+    printf("  +  addition\n");
+    printf("  -  subtraction\n");
+    printf("  *  multiplication\n");
+    printf("  /  division\n");
+    printf("  ^  power\n");
+    printf("  !  factorial\n");
+    printf("\n");
+    printf("Notes:\n");
+    printf("  For factorial, only the first number is used.\n");
+    printf("  The third argument is accepted but ignored: <a> ! <b>\n");
+    printf("  If a number starts with '-', use '--' before arguments.\n");
+    printf("\n");
+    printf("Examples:\n");
+    printf("  iusearchbtw 10 + 20\n");
+    printf("  iusearchbtw 2 ^ 5\n");
+    printf("  iusearchbtw 5 ! 0\n");
+    printf("  iusearchbtw -- -5 + 2\n");
 }
 
 int stoi2(const char *str) {
@@ -171,4 +216,17 @@ int stoi2(const char *str) {
     }
 
     return result;
+}
+
+bool is_binary_operation(char operation) {
+    switch (operation) {
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '^':
+            return true;
+        default:
+            return false;
+    }
 }
