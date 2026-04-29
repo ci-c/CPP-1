@@ -1,5 +1,6 @@
 #include "math_ops.hpp"
 #include <getopt.h>
+#include <limits.h>
 #include <stdio.h>
 
 enum TaskState { TASK_OK = 0, TASK_HELP = 1, TASK_ERROR = -1 };
@@ -18,7 +19,7 @@ int check(Task &task);
 int calculate(Task &task);
 int print(Task &task);
 void print_help();
-int stoi2(const char *str);
+int stoi2(const char *str, int *result);
 bool is_binary_operation(char operation);
 
 int main(int argc, char **argv) { return run(argc, argv); }
@@ -61,9 +62,23 @@ int parse(int argc, char **argv, Task &task) {
     }
 
     if (argc - optind == 3) {
-        task.first_number = stoi2(argv[optind]);
+        if (stoi2(argv[optind], &task.first_number) != TASK_OK) {
+            task.state = TASK_ERROR;
+            return task.state;
+        }
+
+        if (argv[optind + 1][0] == '\0' || argv[optind + 1][1] != '\0') {
+            task.state = TASK_ERROR;
+            return task.state;
+        }
+
         task.operation = argv[optind + 1][0];
-        task.second_number = stoi2(argv[optind + 2]);
+
+        if (stoi2(argv[optind + 2], &task.second_number) != TASK_OK) {
+            task.state = TASK_ERROR;
+            return task.state;
+        }
+
         task.state = TASK_OK;
         return task.state;
     }
@@ -183,28 +198,53 @@ void print_help() {
     printf("  iusearchbtw -- -5 + 2\n");
 }
 
-int stoi2(const char *str) {
+int stoi2(const char *str, int *result) {
     int index = 0;
-    int result = 0;
     bool is_negative = false;
+    long long value = 0;
 
-    while (true) {
-        if (str[index] == '-') {
-            is_negative = true;
-        } else if (str[index] >= '0' && str[index] <= '9') {
-            result = result * 10 + (str[index] - '0');
-        } else {
-            break;
+    if (str == nullptr || result == nullptr || str[0] == '\0') {
+        return TASK_ERROR;
+    }
+
+    if (str[index] == '-') {
+        is_negative = true;
+        index++;
+    } else if (str[index] == '+') {
+        index++;
+    }
+
+    if (str[index] < '0' || str[index] > '9') {
+        return TASK_ERROR;
+    }
+
+    while (str[index] >= '0' && str[index] <= '9') {
+        value = value * 10 + (str[index] - '0');
+
+        if ((!is_negative && value > INT_MAX) ||
+            (is_negative && value > static_cast<long long>(INT_MAX) + 1)) {
+            return TASK_ERROR;
         }
 
         index++;
     }
 
-    if (is_negative) {
-        result = -result;
+    if (str[index] != '\0') {
+        return TASK_ERROR;
     }
 
-    return result;
+    if (is_negative) {
+        if (value == static_cast<long long>(INT_MAX) + 1) {
+            *result = INT_MIN;
+            return TASK_OK;
+        }
+
+        *result = -static_cast<int>(value);
+        return TASK_OK;
+    }
+
+    *result = static_cast<int>(value);
+    return TASK_OK;
 }
 
 bool is_binary_operation(char operation) {
