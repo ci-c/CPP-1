@@ -8,3 +8,5 @@ Makefile
 compile_commands.json
 CTestTestfile.cmake
 Testing/
+.vscode/settings.json
+.vscode/c_cpp_properties.json
