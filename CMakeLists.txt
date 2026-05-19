@@ -57,6 +57,7 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(spdlog)
+find_package(PostgreSQL REQUIRED)
 
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
@@ -82,6 +83,7 @@ target_link_libraries(iusearchbtw
         mathlib::mathlib
         nlohmann_json::nlohmann_json
         spdlog::spdlog
+        PostgreSQL::PostgreSQL
 )
 
 set(TEST_SOURCES
@@ -99,6 +101,7 @@ target_link_libraries(tests
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         gtest_main
+        PostgreSQL::PostgreSQL
 )
 
 enable_testing()
