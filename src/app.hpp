@@ -1,12 +1,11 @@
-#pragma once
-
+#include "db.hpp"
 #include "math_ops.hpp"
-#include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <string>
 #include <memory>
+#include <nlohmann/json.hpp>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
+#include <string>
 
 class Logger {
 public:
@@ -33,12 +32,13 @@ struct Task {
     int second_number = 0;
     char operation = 0;
     int result = 0;
+    bool is_cached = false;
 };
 
 class TaskWorker {
 public:
     TaskWorker(Task &task_);
-    virtual ~TaskWorker() = default; // Виртуальный деструктор - правило хорошего тона
+    virtual ~TaskWorker() = default;
     Task &getResult();
     virtual void exec() = 0;
 
@@ -74,7 +74,28 @@ public:
     void exec() override;
 };
 
+class CacheWorker : public TaskWorker {
+  public:
+    CacheWorker(Task &task_, std::shared_ptr<Database> db_);
+
+  protected:
+    std::shared_ptr<Database> db;
+    std::string build_key() const;
+};
+
+class CacheReader : public CacheWorker {
+  public:
+    CacheReader(Task &task_, std::shared_ptr<Database> db_);
+    void exec() override;
+};
+
+class CacheWriter : public CacheWorker {
+  public:
+    CacheWriter(Task &task_, std::shared_ptr<Database> db_);
+    void exec() override;
+};
+
 class Runner {
-public:
+  public:
     int run(int argc, char **argv);
 };
