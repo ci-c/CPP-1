@@ -23,7 +23,7 @@ private:
     std::shared_ptr<spdlog::logger> spd_logger;
     Logger() {
         spd_logger = spdlog::stdout_color_mt("console");
-        spdlog::set_level(spdlog::level::debug);
+        spdlog::set_level(spdlog::level::err);
     }
 };
 
