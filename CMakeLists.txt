@@ -58,6 +58,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+find_package(PostgreSQL REQUIRED)
+
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 
@@ -67,10 +69,43 @@ else()
     message(WARNING "clang-tidy not found")
 endif()
 
-set(CALCULATOR_SOURCES
+set(APP_HEADERS
+    src/calculator.hpp
+    src/cache_reader.hpp
+    src/cache_worker.hpp
+    src/cache_writer.hpp
+    src/checker.hpp
+    src/db.hpp
+    src/logger.hpp
+    src/parser.hpp
+    src/printer.hpp
+    src/runner.hpp
+    src/task.hpp
+    src/task_worker.hpp
+)
+
+set(APP_SOURCES
+    src/db.cpp
+    src/calculator.cpp
+    src/cache_reader.cpp
+    src/cache_worker.cpp
+    src/cache_writer.cpp
+    src/checker.cpp
+    src/logger.cpp
+    src/parser.cpp
+    src/printer.cpp
+    src/runner.cpp
+    src/task_worker.cpp
+)
+
+set(APP_EXECUTABLE_SOURCES
     src/main.cpp
-    src/app.hpp
-    src/app.cpp
+    ${APP_HEADERS}
+    ${APP_SOURCES}
+)
+
+set(CALCULATOR_SOURCES
+    ${APP_EXECUTABLE_SOURCES}
 )
 
 add_executable(iusearchbtw
@@ -82,11 +117,12 @@ target_link_libraries(iusearchbtw
         mathlib::mathlib
         nlohmann_json::nlohmann_json
         spdlog::spdlog
+        PostgreSQL::PostgreSQL
 )
 
 set(TEST_SOURCES
     src/test.cpp
-    src/app.cpp
+    ${APP_SOURCES}
 )
 
 add_executable(tests
@@ -98,6 +134,7 @@ target_link_libraries(tests
         mathlib::mathlib
         nlohmann_json::nlohmann_json
         spdlog::spdlog
+        PostgreSQL::PostgreSQL
         gtest_main
 )
 

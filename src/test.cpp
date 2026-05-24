@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
-#include <string>
 #include <stdexcept>
-#include "app.hpp"
+#include <string>
+
+#include "calculator.hpp"
+#include "checker.hpp"
+#include "parser.hpp"
+#include "task.hpp"
 
 class CalculatorTest : public ::testing::Test {
 protected:
@@ -89,8 +93,8 @@ protected:
 TEST_F(ParserTest, ValidJsonAddition) {
     std::string json_str = R"({"operation": "+", "first_number": 5, "second_number": 3})";
 
-    Parser parser(task, json_str);
-    parser.exec();
+    Parser parser(task);
+    parser.exec(json_str);
 
     EXPECT_EQ(task.operation, '+');
     EXPECT_EQ(task.first_number, 5);
@@ -100,8 +104,8 @@ TEST_F(ParserTest, ValidJsonAddition) {
 TEST_F(ParserTest, ValidJsonFactorial) {
     std::string json_str = R"({"operation": "!", "first_number": 4})";
 
-    Parser parser(task, json_str);
-    parser.exec();
+    Parser parser(task);
+    parser.exec(json_str);
 
     EXPECT_EQ(task.operation, '!');
     EXPECT_EQ(task.first_number, 4);
@@ -110,8 +114,8 @@ TEST_F(ParserTest, ValidJsonFactorial) {
 TEST_F(ParserTest, InvalidJson) {
     std::string json_str = R"(invalid json)";
 
-    Parser parser(task, json_str);
-    EXPECT_THROW(parser.exec(), nlohmann::json::parse_error);
+    Parser parser(task);
+    EXPECT_THROW(parser.exec(json_str), nlohmann::json::parse_error);
 }
 
 class CheckerTest : public ::testing::Test {

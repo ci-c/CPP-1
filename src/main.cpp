@@ -1,4 +1,4 @@
-#include "app.hpp"
+#include "runner.hpp"
 
 int main(int argc, char **argv) {
     Runner runner;
