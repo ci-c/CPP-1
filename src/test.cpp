@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
-#include <string>
 #include <stdexcept>
-#include "app.hpp"
+#include <string>
+
+#include "calculator.hpp"
+#include "checker.hpp"
+#include "parser.hpp"
+#include "task.hpp"
 
 class CalculatorTest : public ::testing::Test {
 protected:
