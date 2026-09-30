@@ -59,6 +59,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 find_package(PostgreSQL REQUIRED)
+find_package(Threads REQUIRED)
 
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
@@ -80,6 +81,7 @@ set(APP_HEADERS
     src/parser.hpp
     src/printer.hpp
     src/runner.hpp
+    src/signal_watcher.hpp
     src/task.hpp
     src/task_worker.hpp
 )
@@ -95,6 +97,7 @@ set(APP_SOURCES
     src/parser.cpp
     src/printer.cpp
     src/runner.cpp
+    src/signal_watcher.cpp
     src/task_worker.cpp
 )
 
@@ -118,6 +121,7 @@ target_link_libraries(iusearchbtw
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         PostgreSQL::PostgreSQL
+        Threads::Threads
 )
 
 set(TEST_SOURCES
@@ -135,6 +139,7 @@ target_link_libraries(tests
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         PostgreSQL::PostgreSQL
+        Threads::Threads
         gtest_main
 )
 

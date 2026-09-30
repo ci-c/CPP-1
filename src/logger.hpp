@@ -5,8 +5,9 @@
 #include <string>
 
 class Logger {
-public:
+  public:
     static Logger &getInstance();
+    static void set_info_level();
 
     Logger(const Logger &) = delete;
     Logger &operator=(const Logger &) = delete;
@@ -14,7 +15,7 @@ public:
     void info(const std::string &message);
     void error(const std::string &message);
 
-private:
+  private:
     Logger();
 
     std::shared_ptr<spdlog::logger> spd_logger;
