@@ -48,6 +48,7 @@ FetchContent_Declare(
     GIT_TAG v1.14.0
     GIT_SHALLOW TRUE
 )
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 FetchContent_Declare(
@@ -201,3 +202,20 @@ endif()
 install(TARGETS iusearchbtw
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(FILES iusearchbtw.service DESTINATION /lib/systemd/system)
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME "iusearchbtw")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "ops <ops@example.com>")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "iusearchbtw calculator daemon")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libpq5, libsystemd0")
+set(CPACK_IGNORE_FILES
+    "/usr/include/"
+    "/usr/lib/"
+)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+    "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm")
+include(CPack)

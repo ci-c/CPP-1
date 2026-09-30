@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+if ! getent group iusearchbtw >/dev/null; then
+    groupadd --system iusearchbtw
+fi
+
+if ! getent passwd iusearchbtw >/dev/null; then
+    useradd --system --no-create-home --shell /usr/sbin/nologin -g iusearchbtw iusearchbtw
+fi

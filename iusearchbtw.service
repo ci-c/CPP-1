@@ -6,6 +6,7 @@ Wants=postgresql.service
 [Service]
 Type=notify
 NotifyAccess=main
+User=iusearchbtw
 ExecStart=/usr/local/bin/iusearchbtw --daemon
 Restart=on-failure
 RestartSec=5s
