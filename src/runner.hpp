@@ -11,6 +11,7 @@
 #include "printer.hpp"
 #include "signal_watcher.hpp"
 #include "task.hpp"
+#include "tcp_server.hpp"
 
 struct RequestResult {
     int status = 1;      // 0 = OK, 1 = ошибка
@@ -36,4 +37,5 @@ class Runner {
     Calculator calc;
     CacheWriter cache_writer;
     Printer printer;
+    unsigned short port_ = 50321;
 };

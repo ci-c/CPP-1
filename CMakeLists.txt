@@ -58,6 +58,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-30-2
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(asio)
+
+# standalone asio до 1.30.x не поставляет CMake — свой header-only таргет
+add_library(asio INTERFACE)
+add_library(asio::asio ALIAS asio)
+target_include_directories(asio SYSTEM INTERFACE ${asio_SOURCE_DIR}/asio/include)
+
 find_package(PostgreSQL REQUIRED)
 find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -86,6 +99,7 @@ set(APP_HEADERS
     src/signal_watcher.hpp
     src/task.hpp
     src/task_worker.hpp
+    src/tcp_server.hpp
 )
 
 set(APP_SOURCES
@@ -100,6 +114,7 @@ set(APP_SOURCES
     src/printer.cpp
     src/runner.cpp
     src/signal_watcher.cpp
+    src/tcp_server.cpp
     src/task_worker.cpp
 )
 
@@ -125,6 +140,7 @@ target_link_libraries(iusearchbtw
         PostgreSQL::PostgreSQL
         Threads::Threads
         PkgConfig::SYSTEMD
+        asio::asio
 )
 
 set(TEST_SOURCES
@@ -144,11 +160,23 @@ target_link_libraries(tests
         PostgreSQL::PostgreSQL
         Threads::Threads
         PkgConfig::SYSTEMD
+        asio::asio
         gtest_main
 )
 
 enable_testing()
 add_test(NAME calculator_tests COMMAND tests)
+
+add_executable(tcp_tests
+    src/tcp_test.cpp
+)
+target_link_libraries(tcp_tests
+    PRIVATE
+        asio::asio
+        Threads::Threads
+        gtest_main
+)
+add_test(NAME tcp_integration COMMAND tcp_tests)
 
 if (CLANG_FORMAT_EXE)
     add_custom_target(format

@@ -4,12 +4,9 @@
 
 #include <systemd/sd-daemon.h>
 
-#include <chrono>
 #include <exception>
 #include <iostream>
-#include <poll.h>
 #include <thread>
-#include <unistd.h>
 
 Runner::Runner()
     : db(), task(), parser(task), checker(task), cache_reader(task, db), calc(task),
@@ -63,25 +60,12 @@ int Runner::run_service() {
     return 0;
 }
 
-
 void Runner::service_loop(SignalWatcher &watcher) {
-    struct pollfd pfd{STDIN_FILENO, POLLIN, 0};
-    std::string line;
-    bool stdin_eof = false;
-    while (!watcher.shutdown_requested()) {
-        const bool have_data =
-            !stdin_eof && (std::cin.rdbuf()->in_avail() > 0 || ::poll(&pfd, 1, 100) > 0);
-        if (watcher.shutdown_requested())
-            break;
-        if (have_data) {
-            if (!std::getline(std::cin, line)) {
-                stdin_eof = true;
-                continue;
-            }
-            if (!line.empty())
-                process_one(line);
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-    }
+    TcpServer server(port_, [this](const std::string &req) {
+        const auto r = handle_one(req);
+        if (r.status == 0)
+            return r.payload;
+        return std::string("{\"error\":\"") + r.payload + "\"}";
+    });
+    server.run([&watcher] { return watcher.shutdown_requested(); });
 }
