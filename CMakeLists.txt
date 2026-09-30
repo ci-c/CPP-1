@@ -60,6 +60,8 @@ FetchContent_MakeAvailable(spdlog)
 
 find_package(PostgreSQL REQUIRED)
 find_package(Threads REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
@@ -122,6 +124,7 @@ target_link_libraries(iusearchbtw
         spdlog::spdlog
         PostgreSQL::PostgreSQL
         Threads::Threads
+        PkgConfig::SYSTEMD
 )
 
 set(TEST_SOURCES
@@ -140,6 +143,7 @@ target_link_libraries(tests
         spdlog::spdlog
         PostgreSQL::PostgreSQL
         Threads::Threads
+        PkgConfig::SYSTEMD
         gtest_main
 )
 

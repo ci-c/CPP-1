@@ -2,6 +2,8 @@
 
 #include "logger.hpp"
 
+#include <systemd/sd-daemon.h>
+
 #include <chrono>
 #include <exception>
 #include <iostream>
@@ -51,10 +53,12 @@ int Runner::run_service() {
     Logger::set_info_level();
     SignalWatcher watcher;
     watcher.start();
+    sd_notify(0, "READY=1");
     Logger::getInstance().info("service ready");
     std::thread worker(&Runner::service_loop, this, std::ref(watcher));
     worker.join();
     watcher.stop();
+    sd_notify(0, "STOPPING=1");
     Logger::getInstance().info("service stopped");
     return 0;
 }
