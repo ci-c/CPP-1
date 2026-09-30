@@ -48,6 +48,7 @@ FetchContent_Declare(
     GIT_TAG v1.14.0
     GIT_SHALLOW TRUE
 )
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 FetchContent_Declare(
@@ -58,7 +59,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-30-2
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(asio)
+
+# standalone asio до 1.30.x не поставляет CMake — свой header-only таргет
+add_library(asio INTERFACE)
+add_library(asio::asio ALIAS asio)
+target_include_directories(asio SYSTEM INTERFACE ${asio_SOURCE_DIR}/asio/include)
+
 find_package(PostgreSQL REQUIRED)
+find_package(Threads REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
@@ -80,8 +97,10 @@ set(APP_HEADERS
     src/parser.hpp
     src/printer.hpp
     src/runner.hpp
+    src/signal_watcher.hpp
     src/task.hpp
     src/task_worker.hpp
+    src/tcp_server.hpp
 )
 
 set(APP_SOURCES
@@ -95,6 +114,8 @@ set(APP_SOURCES
     src/parser.cpp
     src/printer.cpp
     src/runner.cpp
+    src/signal_watcher.cpp
+    src/tcp_server.cpp
     src/task_worker.cpp
 )
 
@@ -118,6 +139,9 @@ target_link_libraries(iusearchbtw
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         PostgreSQL::PostgreSQL
+        Threads::Threads
+        PkgConfig::SYSTEMD
+        asio::asio
 )
 
 set(TEST_SOURCES
@@ -135,11 +159,25 @@ target_link_libraries(tests
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         PostgreSQL::PostgreSQL
+        Threads::Threads
+        PkgConfig::SYSTEMD
+        asio::asio
         gtest_main
 )
 
 enable_testing()
 add_test(NAME calculator_tests COMMAND tests)
+
+add_executable(tcp_tests
+    src/tcp_test.cpp
+)
+target_link_libraries(tcp_tests
+    PRIVATE
+        asio::asio
+        Threads::Threads
+        gtest_main
+)
+add_test(NAME tcp_integration COMMAND tcp_tests)
 
 if (CLANG_FORMAT_EXE)
     add_custom_target(format
@@ -164,3 +202,29 @@ endif()
 install(TARGETS iusearchbtw
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(FILES iusearchbtw.service DESTINATION /lib/systemd/system)
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME "iusearchbtw")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "ops <ops@example.com>")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "iusearchbtw calculator daemon")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libpq5, libsystemd0")
+set(CPACK_IGNORE_FILES
+    "/usr/include/"
+    "/usr/lib/"
+)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
+find_program(DPKG_EXECUTABLE dpkg)
+if (DPKG_EXECUTABLE)
+    execute_process(COMMAND ${DPKG_EXECUTABLE} --print-architecture
+        OUTPUT_VARIABLE DEB_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
+else()
+    set(DEB_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+set(CPACK_DEBIAN_FILE_NAME
+    "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_${DEB_ARCHITECTURE}.deb")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+    "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm")
+include(CPack)

@@ -1,4 +1,7 @@
 build/
+build-tsan/
+.omp/
+.cache/
 cmake-build-*/
 
 CMakeCache.txt

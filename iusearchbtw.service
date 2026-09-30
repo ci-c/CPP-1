@@ -1,0 +1,18 @@
+[Unit]
+Description=iusearchbtw calculator daemon
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=iusearchbtw
+ExecStart=/usr/local/bin/iusearchbtw --daemon
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=10s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
